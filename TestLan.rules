@@ -1,0 +1,33 @@
+# ==============================================
+# Rules test Lab IDS
+# ==============================================
+
+# Rules Test LAN ===============================
+# TC-LAN-001 Port Scan (TCP SYN + ICMP)
+alert tcp any any -> $HOME_NET any (msg:"[LOCAL] Port Scan TCP SYN Detected"; flow:stateless; flags:S,12; threshold:type both, track by_dst, count 50, seconds 10; sid:9000001; rev:1;)
+alert icmp any any -> $HOME_NET any (msg:"[LOCAL] ICMP Sweep / Port Scan"; itype:8; threshold:type both, track by_dst, count 30, seconds 10; sid:9000002; rev:1;)
+
+# TC-LAN-002 TCP SYN Flood
+alert tcp any any -> $HOME_NET any (msg:"[LOCAL] TCP SYN Flood Detected"; flow:stateless; flags:S; threshold:type threshold, track by_dst, count 200, seconds 5; sid:9000003; rev:1;)
+# TC-LAN-003 ICMP Flood
+alert icmp any any -> $HOME_NET any (msg:"[LOCAL] ICMP Flood Detected"; itype:8; threshold:type threshold, track by_dst, count 500, seconds 5; sid:9000004; rev:1;)
+
+# TC-LAN-004 Base64 file sent via HTTP GET unusually long
+alert tcp $HOME_NET any -> any any (msg:"[LOCAL] Data Base64 in HTTP"; flow:to_server,established; content:"data="; pcre:"/\/?(data=|leak=|exfil=)[A-Za-z0-9+\/]{20,}={0,2}/U"; http_uri; sid:9000005; rev:1;)
+# TC-LAN-005 DNS Tunneling (iodine, dncat – nhiều TXT query dài) -- dns query
+alert udp any any -> any 53 (msg:"[LOCAL] Possible DNS Tunneling (Long TXT)"; content:"|01 00 00 01 00 00 00 00 00 00|"; offset:2; depth:10; pcre:"/^.+\.tunnel\.lab$/i"; dsize:>100; threshold:type both, track by_src, count 10, seconds 300; sid:9000008; rev:3;)
+
+# TC-LAN-006 Lateral Movement
+alert tcp $HOME_NET any -> $HOME_NET 22 (msg:"[LOCAL] Lateral Movement: Internal SSH Scan Attempt"; flow:established,to_server; content:"SSH-"; sid:9000006; rev:1;)
+# TC-LAN-007 Brute-force SSH (nhiều kết nối thất bại)
+alert tcp any any -> $HOME_NET 22 (msg:"[LOCAL] SSH Brute-Force Detected"; flow:to_server; content:"SSH-"; depth:4; threshold:type threshold, track by_src, count 10, seconds 60; sid:9000007; rev:1;)
+# TC-LAN-008 RDP Brute-force
+# alert tcp any any -> $HOME_NET 3389 (msg:"[LOCAL] RDP Brute-Force Detected"; flow:to_server,established; threshold:type threshold, track by_src, count 15, seconds 120; sid:9000009; rev:1;)
+
+# TC-LAN-009 Data Exfiltration (lưu lượng outbound cực lớn) -- bytes
+alert tcp $HOME_NET any -> !$HOME_NET any (msg:"[LOCAL] Possible Data Exfiltration (High Connection Count)"; flow:established,to_server; threshold:type threshold, track by_src, count 1000, seconds 600; sid:9000011; rev:2;)
+
+
+# TC-EV-004 Directory Traversal Unicode
+alert tcp any any -> $HOME_NET 80 (msg:"WEB Directory Traversal – Unicode encoded"; flow:to_server,established; pcre:"/%(c0|c1)%/i"; sid:200007; rev:1;)
+
