@@ -2,3 +2,23 @@
 # Rules Test Lab IDS
 # ==============================================
 # Rules Test Web ==========================
+
+# TC-WEB-001 SQL Injection
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORT (msg:"ATTACK - SQL Injection KEYWORDS"; flow:to_server,established; content"="; http_uri; pcre:"/(union|select|insert|update|delete|drop)/i"; nocase; sid:1000020; rev:2;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORT (msg:"ATTACK - SQL Injection EXEC"; flow:to_server,established; content:"="; http_uri; pcre:"/(exec|execute)/i"; nocase; sid:1000021; rev:2;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORT (msg:"ATTACK - SQL Injection TIME"; flow:to_server,established; content:"="; http_uri; pcre:"/(benchmark|sleep)/i"; nocase; sid:1000022; rev:2;)
+
+# TC-WEB-002 Directory Traversal
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORT (msg:"ATTACK - Directory Traversal Attempt"; flow:to_server,established; content:"../"; http_uri; pcre:"/(\.\.\/){4,}|(%2e%2e%2f){4,}/i"; nocase; sid:1000023; rev:2;)
+
+# TC-WEB-003 Command Injection
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"ATTACK - Command Injection Logical Operators"; flow:to_server,established; content:"&"; http_uri; pcre:"/(\&\&|\|\|)/i"; sid:1000025; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"ATTACK - Command Injection Dangerous Commands"; flow:to_server,established; content:"/"; http_uri; pcre:"/(whoami|id|pwd|uname|wget|curl|nc|python|sh|bash|perl|cat\s+\/etc\/passwd)/i"; sid:1000026; rev:1;)
+
+# TC-WEB-004 XSS
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"ATTACK - XSS Script Tag"; flow:to_server,established; content:"<script"; http_uri; pcre:"/<script/i"; nocase; sid:1000027; rev:1;)
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:"ATTACK - XSS JavaScript Protocol"; flow:to_server,established; content:"javascript:"; http_uri; pcre:"/javascript:/i"; nocase; sid:1000028; rev:1;)
+
+
+# TC-Web-005 Meterpreter C2 Beaconing
+alert tcp $HOME_NET any -> any any (msg:"[LOCAL] Meterpreter Reverse TCP Beacon"; flow:established,to_server; content:"User-Agent|3a|"; http_header; pcre:"/^POST.*User-Agent\x3a[^\r\n]{0,200}(Mozilla\/4\.0|Meterpreter)/smi"; sid:1000030; rev:2;)
