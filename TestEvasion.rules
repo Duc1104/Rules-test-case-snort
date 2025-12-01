@@ -1,0 +1,19 @@
+# ==============================================
+# Rules Test Lab IDS
+# ==============================================
+
+# Rules Test Evasion ===========================
+# TC-EV-001 Nmap SYN Scan + Fragmentation
+alert tcp any any -> $HOME_NET any (msg:"SCAN Nmap SYN Fragmented"; flags:S; fragbits:M; detection_filter:track by_src, count 5, seconds 10; sid:200001; rev:1;)
+# TC-EV-001 Nmap UDP Fragmented Scan
+alert udp any any -> $HOME_NET any (msg:"SCAN Nmap UDP Fragmented"; fragbits:M; detection_filter:track by_src, count 5, seconds 10; sid:200002; rev:1;)
+# TC-EV-002 Slow (Slow HTTP Headers DoS)
+alert tcp any any -> $HOME_NET 80 (msg:"DOS Slowloris Attack – Slow HTTP Header Flood"; flow:to_server,established; content:"Host|3A|"; http_header; threshold:type both, track by_src, count 50, seconds 10; sid:200003; rev:1;)
+# TC-EV-003 SQLi space2comment
+alert tcp any any -> $HOME_NET 80 (msg:"WEB SQL Injection – space2comment evasion"; flow:to_server,established; content:"/**/"; http_uri; nocase; sid:200004; rev:1;)
+# TC-EV-003 SQLi (randomcase)
+alert tcp any any -> $HOME_NET 80 (msg:"WEB SQL Injection (randomcase)"; flow:to_server,established; pcre:"/(%27)|(')|(\-\-)|(%23)|(#)/i"; sid:200005; rev:1;)
+# TC-EV-004 Directory Traversal Double-Encoded
+alert tcp any any -> $HOME_NET 80 (msg:"WEB Directory Traversal Double-Encoded"; flow:to_server,established; uricontent:"%2e%2e%2f"; nocase; sid:200006; rev:1;)
+# TC-EV-004 Directory Traversal Unicode
+alert tcp any any -> $HOME_NET 80 (msg:"WEB Directory Traversal – Unicode encoded"; flow:to_server,established; pcre:"/%(c0|c1)%/i"; sid:200007; rev:1;)
