@@ -23,6 +23,7 @@ alert tcp $HOME_NET any -> $HOME_NET 22 (msg:"[LOCAL] Lateral Movement: Internal
 alert tcp any any -> $HOME_NET 22 (msg:"[LOCAL] SSH Brute-Force Detected"; flags:S; flow:stateless; threshold:type both, track by_src, count 10, seconds 30;; sid:9000007; rev:1;)
 # TC-LAN-008 RDP Brute-force
 # alert tcp any any -> $HOME_NET 3389 (msg:"[LOCAL] RDP Brute-Force Detected"; flow:to_server,established; threshold:type threshold, track by_src, count 15, seconds 120; sid:9000009; rev:1;)
+# alert tcp any any -> $HOME_NET 3389 (msg:"[LOCAL] RDP Brute-Force Detected (SYN Count)"; flow:stateless; flags:S; threshold:type both, track by_src, count 15, seconds 120;sid:9000009; rev:2;)
 
 # TC-LAN-009 Data Exfiltration (lưu lượng outbound cực lớn) -- bytes
 alert tcp $HOME_NET any -> !$HOME_NET any (msg:"[LOCAL] Possible Data Exfiltration (High Connection Count)"; flow:established,to_server; threshold:type threshold, track by_src, count 1000, seconds 600; sid:9000011; rev:2;)
