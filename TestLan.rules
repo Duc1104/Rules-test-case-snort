@@ -18,7 +18,7 @@ alert tcp $HOME_NET any -> any any (msg:"[LOCAL] Data Base64 in HTTP"; flow:to_s
 alert udp any any -> any 53 (msg:"[LOCAL] Possible DNS Tunneling (Long TXT)"; content:"|01 00 00 01 00 00 00 00 00 00|"; offset:2; depth:10; pcre:"/^.+\.tunnel\.lab$/i"; dsize:>100; threshold:type both, track by_src, count 10, seconds 300; sid:9000008; rev:3;)
 
 # TC-LAN-006 Lateral Movement
-alert tcp $HOME_NET any -> $HOME_NET 22 (msg:"[LOCAL] Lateral Movement: Internal SSH Scan Attempt"; flow:established,to_server; content:"SSH-"; sid:9000006; rev:1;)
+alert tcp $HOME_NET any -> $HOME_NET 22 (msg:"[LOCAL] Lateral Movement: Internal SSH Scan Attempt"; flags:S; threshold:type both, track by_src, count 10, seconds 10; sid:9000006; rev:1;)
 # TC-LAN-007 Brute-force SSH (nhiều kết nối thất bại)
 alert tcp any any -> $HOME_NET 22 (msg:"[LOCAL] SSH Brute-Force Detected"; flow:to_server; content:"SSH-"; depth:4; threshold:type threshold, track by_src, count 10, seconds 60; sid:9000007; rev:1;)
 # TC-LAN-008 RDP Brute-force
